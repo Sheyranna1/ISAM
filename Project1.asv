@@ -1,0 +1,59 @@
+%% Project 1 Resolution
+% Shey, Emily, Grace
+
+close all
+clear
+
+%% Load the pics and do the stuff
+% turning and fixing and grayscalling
+hor_bars = imread("horiz_crop_F56_5_g.tif"); % Horizontal AKA Vertical res
+hor_bars = im2gray(hor_bars); hor_bars = imcrop(hor_bars); 
+
+vert_bars = imread("vert_crop_F56_5_g.tif"); % Vertical AKA Horizontal RES
+vert_bars = imrotate(vert_bars, 90); 
+vert_bars = im2gray(vert_bars); vert_bars = imcrop(vert_bars); 
+
+%% Delta to multiply with each pixel column
+% this took a while but now i understand 
+hor_delta = 1 / size(hor_bars, 2); % Horizontal delta, aka how much we scoot per column
+vert_delta = 1 / size(vert_bars, 2); % Vertical delta, because sometimes ccropped imgs not same size and we dont want crash
+
+%% Crunching numbers
+% calculating contrast for both orientations of bars
+
+% for our lovely horizontal bars (going column by column)
+hor_lw_ph = []; % Gotta start empty
+hor_contrast = []; % More emptiness
+
+for i = 1:size(hor_bars, 2) % Scoot over each column like it's a treadmill
+    I_max_hor_col = max(double(hor_bars(:, i))); % Find the brightest pixel in this column, woah!
+    I_min_hor_col = min(double(hor_bars(:, i))); % Find the darkest one, spooky...
+    hor_lw_ph(i) = i * hor_delta * 100; % Turn column index into something fancy: lw/ph
+    hor_contrast(i) = (I_max_hor_col - I_min_hor_col) / (I_max_hor_col + I_min_hor_col); % How contrasty is this column?
+end
+
+% Now for those wild vertical bars (yup, also column by column)
+vert_lw_ph = []; % More empty lists because why not
+vert_contrast = []; % Even more emptiness
+
+for i = 1:size(vert_bars, 2) % Same treadmill, new direction
+    I_max_vert_col = max(double(vert_bars(:, i))); % Max out the intensity for this column, pow!
+    I_min_vert_col = min(double(vert_bars(:, i))); % Minimum intensity, creeping in the shadows
+    vert_lw_ph(i) = i * vert_delta * 100; % Scale it up like a boss: lw/ph
+    vert_contrast(i) = (I_max_vert_col - I_min_vert_col) / (I_max_vert_col + I_min_vert_col); % What's the contrast here? Let's see
+end
+
+%% The Limiting Resolution Line (because we need limits in life)
+lim_res = 0.05; % This is the line in the sand for resolution – cross it if you dare
+
+%% Time to show off with a plot!
+figure;
+plot(hor_lw_ph, hor_contrast, 'b'); hold on; % Here comes the blue line for horizontal contrast, looking good!
+plot(vert_lw_ph, vert_contrast, 'r'); % Red line for vertical contrast, spicy!
+yline(lim_res, 'r--', 'LineWidth', 2); % A dramatic dashed line for the limiting resolution, don't cross it!
+
+% Labels and Title to make it look official
+xlabel('lw/ph'); % What we're plotting on the x-axis
+ylabel('Contrast'); % And this is for the y-axis
+title('LW/PH vs Contrast for Horizontal and Vertical Bars'); % Fancy title to impress your friends
+legend('Horizontal Bars', 'Vertical Bars', 'Limiting Resolution'); % For those who need a legend to know what's going on
